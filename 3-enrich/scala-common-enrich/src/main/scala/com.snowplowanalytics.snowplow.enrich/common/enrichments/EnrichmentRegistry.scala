@@ -53,7 +53,8 @@ import registry.{
   UserAgentUtilsEnrichmentConfig,
   UaParserEnrichmentConfig,
   CurrencyConversionEnrichmentConfig,
-  JavascriptScriptEnrichmentConfig
+  JavascriptScriptEnrichmentConfig,
+  CustomEnrichment
 }
 
 import utils.ScalazJson4sUtils
@@ -169,11 +170,17 @@ object EnrichmentRegistry {
  */
 case class EnrichmentRegistry(private val configs: EnrichmentMap) {
 
-  def getFilesToCache: List[(URI, String)] =
-    getIpLookupsEnrichment match {
+  def getFilesToCache: List[(URI, String)] = {
+    val databaseFiles = getIpLookupsEnrichment match {
       case None => Nil
       case Some(ipe) => ipe.dbsToCache
     }
+    val customEnrichmentFiles = getCustomEnrichment.toList.flatMap(_.getFilesToCache)
+    databaseFiles ++ customEnrichmentFiles
+  }
+
+  def getCustomEnrichment: Option[CustomEnrichment] =
+    getEnrichment[CustomEnrichment]("custom_enrichment")
 
   /**
    * Returns an Option boxing the AnonIpEnrichment
