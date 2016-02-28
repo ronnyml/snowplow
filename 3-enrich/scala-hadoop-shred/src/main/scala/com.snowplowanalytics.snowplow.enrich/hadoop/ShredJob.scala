@@ -144,8 +144,8 @@ object ShredJob {
       }
       .zipWithIndex
       .filter(x => ! ShredJob.IgnoredJsonFields.contains(x._2))
-      .map(_._1)
-      .mkString("\t")
+      .map("\"" + _._1 + "\"")
+      .mkString(",")
   }
 
   /**
